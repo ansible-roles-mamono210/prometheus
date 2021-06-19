@@ -1,0 +1,26 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Check whether Prometheus is installed
+      ansible.builtin.command: prometheus --version
+      register: prometheus_installed
+      changed_when: false
+      ignore_errors: true
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+    - name: Make sure Prometheus is installed
+      ansible.builtin.debug:
+        var: prometheus_installed
+
+    - name: Check OS version
+      ansible.builtin.command: cat /etc/redhat-release
+      register: os_version
+      changed_when: false
+
+    - name: Show OS version
+      ansible.builtin.debug:
+        var: os_version

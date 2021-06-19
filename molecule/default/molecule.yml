@@ -1,0 +1,28 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: instance
+    image: ghcr.io/docker-hub-tm/ansible-test/${MOLECULE_DISTRO:-centos8}:latest
+    command: /sbin/init
+    privileged: True
+    exposed_ports:
+      - 9090/tcp
+    published_ports:
+      - 0.0.0.0:9090:9090/tcp
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      callback_whitelist: ansible.posix.profile_tasks
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - syntax
+    - create
+    - converge
+    - idempotence
+    - verify

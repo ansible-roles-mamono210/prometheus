@@ -1,0 +1,106 @@
+---
+name: build
+on: [deployment, push]
+
+jobs:
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install ansible-lint
+        run: |
+          pip install "ansible-lint[community,yamllint]"
+
+      - name: Install galaxy roles
+        run: |
+          ansible-galaxy install git+https://github.com/${{ github.repository }},${{ github.sha }}
+
+      - name: Execulte ansible-lint
+        run: |
+          ansible-lint
+
+      - name: Show ansible-lint version
+        run: |
+          pip list | grep ansible \
+          | GREP_COLORS='mt=01;34' egrep --color=always '[[:digit:]]' \
+          | GREP_COLORS='mt=01;34' egrep --color=always '\.' \
+          | GREP_COLORS='mt=01;33' egrep --color=always 'ansible.* '
+          ansible-lint --version
+
+  molecule:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - centos7
+          - centos8
+        python-version:
+          - 3.9
+        scenario-name:
+          - default
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: python3 -m pip install -r molecule/requirements.txt
+
+      - name: Test with molecule
+        run: |
+          molecule test --scenario-name ${{ matrix.scenario-name }}
+        env:
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.distro }}
+          MOLECULE_NO_LOG: False
+          PROFILE_TASKS_SORT_ORDER: 'none'
+          PROFILE_TASKS_TASK_OUTPUT_LIMIT: '100'
+          PY_COLORS: '1'
+          TZ: 'Asia/Tokyo'
+
+      - name: Show Ansible version
+        run: |
+          pip list | grep ansible \
+          | GREP_COLORS='mt=01;34' egrep --color=always '[[:digit:]]' \
+          | GREP_COLORS='mt=01;34' egrep --color=always '\.' \
+          | GREP_COLORS='mt=01;33' egrep --color=always 'ansible.* '
+          ansible --version
+
+      - name: Show molecule version
+        run: |
+          molecule --version
+        env:
+          PY_COLORS: '1'
+
+  trailing-whitespace:
+    name: Find Trailing Whitespace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: harupy/find-trailing-whitespace@56310d70ae8fd21afec8d4307d2d9ab6c15e7c5d
+
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Execute yamllint
+        run: yamllint *
+
+      - name: Show yamllint version
+        run: |
+          yamllint --version \
+          | GREP_COLORS='mt=01;34' egrep --color=always '[[:digit:]]' \
+          | GREP_COLORS='mt=01;34' egrep --color=always '\.' \
+          | GREP_COLORS='mt=01;33' egrep --color=always 'yamllint.* '
