@@ -17,13 +17,31 @@
     gpgkey: "https://packagecloud.io/prometheus-rpm/release/gpgkey\n https://raw.githubusercontent.com/lest/prometheus-rpm/master/RPM-GPG-KEY-prometheus-rpm"
   when: prometheus_installed is failed
 
-- name: Install Prometheus
+- name: Install Prometheus and node-exporter
   ansible.builtin.package:
-    name: 'prometheus2'
+    name: '{{ item }}'
     state: present
+  loop:
+    - 'prometheus2'
+    - 'node_exporter'
+  when: prometheus_installed is failed
+
+- name: Configure prometheus.yml
+  ansible.builtin.lineinfile:
+    path: '/etc/prometheus/prometheus.yml'
+    line: "{{ item }}"
+    state: present
+    insertafter: EOF
+  loop:
+    - "  - job_name: 'node'\n    static_configs:"
+    - "    - targets: ['localhost:9100']"
+  when: prometheus_installed is failed
 
 - name: Start Prometheus
   ansible.builtin.service:
-    name: prometheus
+    name: "{{ item }}"
     state: started
     enabled: yes
+  loop:
+    - 'prometheus'
+    - 'node_exporter'

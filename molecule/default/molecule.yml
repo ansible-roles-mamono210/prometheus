@@ -6,11 +6,17 @@ driver:
 platforms:
   - name: instance
     image: ghcr.io/docker-hub-tm/ansible-test/${MOLECULE_DISTRO:-centos8}:latest
-    command: /sbin/init
+    docker_host: "${DOCKER_HOST:-unix://var/run/docker.sock}"
+    command:
+      - '/sbin/init'
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
     privileged: True
     exposed_ports:
+      - 9100/tcp
       - 9090/tcp
     published_ports:
+      - 0.0.0.0:9100:9100/tcp
       - 0.0.0.0:9090:9090/tcp
 provisioner:
   name: ansible

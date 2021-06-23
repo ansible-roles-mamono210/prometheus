@@ -6,15 +6,26 @@
   tasks:
     - name: Check whether Prometheus is installed
       ansible.builtin.command: prometheus --version
-      register: prometheus_installed
       changed_when: false
       ignore_errors: true
+      register: prometheus_installed
       environment:
         PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
 
     - name: Make sure Prometheus is installed
       ansible.builtin.debug:
         var: prometheus_installed
+
+    - name: Check if node exporter is working
+      ansible.builtin.command:
+        curl http://localhost:9100  # noqa command-instead-of-module
+      changed_when: false
+      ignore_errors: true
+      register: curl_status
+
+    - name: Make sure node exporter is working
+      ansible.builtin.debug:
+        var: curl_status
 
     - name: Check OS version
       ansible.builtin.command: cat /etc/redhat-release
