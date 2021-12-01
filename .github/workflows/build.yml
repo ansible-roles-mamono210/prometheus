@@ -34,54 +34,15 @@ jobs:
           | GREP_COLORS='mt=01;33' egrep --color=always 'ansible.* '
           ansible-lint --version
 
-  molecule:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        distro:
-          - centos7
-          - centos8
-        python-version:
-          - 3.9
-        scenario-name:
-          - default
+  molecule-centos7:
+    uses: github-actions-reusable-workflows/molecule-docker/.github/workflows/workflows.yml@main
+    with:
+      molecule-image: ghcr.io/docker-hub-tm/ansible-test/centos7:latest
 
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: python3 -m pip install -r molecule/requirements.txt
-
-      - name: Test with molecule
-        run: |
-          molecule test --scenario-name ${{ matrix.scenario-name }}
-        env:
-          ANSIBLE_FORCE_COLOR: '1'
-          MOLECULE_DISTRO: ${{ matrix.distro }}
-          MOLECULE_NO_LOG: False
-          PROFILE_TASKS_SORT_ORDER: 'none'
-          PROFILE_TASKS_TASK_OUTPUT_LIMIT: '100'
-          PY_COLORS: '1'
-          TZ: 'Asia/Tokyo'
-
-      - name: Show Ansible version
-        run: |
-          pip list | grep ansible \
-          | GREP_COLORS='mt=01;34' egrep --color=always '[[:digit:]]' \
-          | GREP_COLORS='mt=01;34' egrep --color=always '\.' \
-          | GREP_COLORS='mt=01;33' egrep --color=always 'ansible.* '
-          ansible --version
-
-      - name: Show molecule version
-        run: |
-          molecule --version
-        env:
-          PY_COLORS: '1'
+  molecule-centos8:
+    uses: github-actions-reusable-workflows/molecule-docker/.github/workflows/workflows.yml@main
+    with:
+      molecule-image: ghcr.io/docker-hub-tm/ansible-test/centos8:latest
 
   trailing-whitespace:
     name: Find Trailing Whitespace
