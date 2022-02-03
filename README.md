@@ -3,7 +3,7 @@
 Role Description
 =========
 
-Installs [Prometheus](https://prometheus.io) for CentOS7/8.
+Installs [Prometheus](https://prometheus.io) for CentOS7/Stream8.
 
 Requirements
 ------------
