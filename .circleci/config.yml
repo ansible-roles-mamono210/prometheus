@@ -1,0 +1,98 @@
+---
+jobs:
+  ansible-lint:
+    docker:
+      - image: ghcr.io/docker-hub-tm/circleci-executors/ansible-lint:latest
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install galaxy roles
+          command: |
+            if [ -f 'roles/requirements.yml' ]; then
+              ansible-galaxy install -r roles/requirements.yml
+            else
+              ansible-galaxy install git+${CIRCLE_REPOSITORY_URL},${CIRCLE_SHA1}
+            fi
+      - run:
+          name: Execulte Ansible-lint
+          command: ansible-lint
+      - run:
+          name: Show Ansible-lint version
+          command: |
+            pip list | grep ansible \
+            | GREP_COLORS='mt=01;34' egrep --color=always '[[:digit:]]' \
+            | GREP_COLORS='mt=01;34' egrep --color=always '\.' \
+            | GREP_COLORS='mt=01;33' egrep --color=always 'ansible.* '
+            ansible-lint --version
+  molecule:
+    machine:
+      image: ubuntu-2004:202111-02
+    resource_class: medium
+    parameters:
+      checkout-path:
+        type: string
+      molecule-image:
+        type: string
+    steps:
+      - checkout:
+          path: << parameters.checkout-path >>
+      - run:
+          name: Install Molecule and dependencies
+          command: |
+            cd << parameters.checkout-path >>
+            pip3 install -r molecule/requirements.txt
+      - run:
+          name: Test with Molecule
+          command: |
+            cd << parameters.checkout-path >>
+            molecule test
+          environment:
+            PY_COLORS: '1'
+            ANSIBLE_FORCE_COLOR: '1'
+            MOLECULE_IMAGE: << parameters.molecule-image >>
+      - run:
+          name: Show Ansible version
+          command: |
+            pip3 list | grep ansible \
+            | GREP_COLORS='mt=01;34' egrep --color=always '[[:digit:]]' \
+            | GREP_COLORS='mt=01;34' egrep --color=always '\.' \
+            | GREP_COLORS='mt=01;33' egrep --color=always 'ansible.* '
+      - run:
+          name: Show Molecule version
+          command: molecule --version
+  yamllint:
+    docker:
+      - image: ghcr.io/docker-hub-tm/circleci-executors/yamllint:latest
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Execute yamllint
+          command: yamllint *
+  trailing-whitespace:
+    docker:
+      - image: ghcr.io/docker-hub-tm/circleci-executors/trailing-whitespace:latest
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Execute trailing-whitespace
+          command: trailing-whitespace
+
+version: 2.1
+workflows:
+  version: 2
+  build:
+    jobs:
+      - ansible-lint
+      - molecule:
+          matrix:
+            parameters:
+              checkout-path:
+                - 'prometheus'
+              molecule-image:
+                - 'ghcr.io/docker-hub-tm/ansible-test/centos7:latest'
+                - 'ghcr.io/docker-hub-tm/ansible-test/centos-stream8:latest'
+      - yamllint
+      - trailing-whitespace

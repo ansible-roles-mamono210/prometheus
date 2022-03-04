@@ -1,4 +1,4 @@
-[![](https://github.com/ansible-roles-mamono210/prometheus/workflows/build/badge.svg)](https://github.com/ansible-roles-mamono210/prometheus/actions?query=workflow%3Abuild)
+[![CircleCI](https://circleci.com/gh/ansible-roles-mamono210/prometheus/tree/main.svg?style=svg)](https://circleci.com/gh/ansible-roles-mamono210/prometheus/tree/main)
 
 Role Description
 =========
