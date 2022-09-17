@@ -85,7 +85,13 @@ workflows:
   version: 2
   build:
     jobs:
-      - ansible-lint
+      - trailing-whitespace
+      - yamllint:
+          requires:
+            - trailing-whitespace
+      - ansible-lint:
+          requires:
+            - yamllint
       - molecule:
           matrix:
             parameters:
@@ -94,5 +100,5 @@ workflows:
               molecule-image:
                 - 'ghcr.io/docker-hub-tm/ansible-test/centos7:latest'
                 - 'ghcr.io/docker-hub-tm/ansible-test/centos-stream8:latest'
-      - yamllint
-      - trailing-whitespace
+          requires:
+            - ansible-lint
