@@ -12,4 +12,5 @@ galaxy_info:
         - 7
         - 8
   galaxy_tags: []
+  standalone: true
 dependencies: []
