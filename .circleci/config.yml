@@ -2,7 +2,7 @@
 jobs:
   ansible-lint:
     docker:
-      - image: ghcr.io/docker-hub-tm/circleci-executors/ansible-lint:latest
+      - image: ghcr.io/docker-images-mamono210/circleci-executors/ansible-lint:latest
     resource_class: small
     steps:
       - checkout
@@ -63,7 +63,7 @@ jobs:
           command: molecule --version
   yamllint:
     docker:
-      - image: ghcr.io/docker-hub-tm/circleci-executors/yamllint:latest
+      - image: ghcr.io/docker-images-mamono210/circleci-executors/yamllint:latest
     resource_class: small
     steps:
       - checkout
@@ -72,7 +72,7 @@ jobs:
           command: yamllint *
   trailing-whitespace:
     docker:
-      - image: ghcr.io/docker-hub-tm/circleci-executors/trailing-whitespace:latest
+      - image: ghcr.io/docker-images-mamono210/circleci-executors/trailing-whitespace:latest
     resource_class: small
     steps:
       - checkout
@@ -98,7 +98,7 @@ workflows:
               checkout-path:
                 - 'prometheus'
               molecule-image:
-                - 'ghcr.io/docker-hub-tm/ansible-test/centos7:latest'
-                - 'ghcr.io/docker-hub-tm/ansible-test/centos-stream8:latest'
+                - 'ghcr.io/docker-images-mamono210/ansible-test/centos7:latest'
+                - 'ghcr.io/docker-images-mamono210/ansible-test/centos-stream8:latest'
           requires:
             - ansible-lint
