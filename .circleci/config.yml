@@ -3,6 +3,7 @@ version: 2.1
 
 orbs:
   ansible-lint: orbss/ansible-lint@0.0.3
+  yamllint: orbss/yamllint@0.0.4
 
 jobs:
   ansible-lint:
@@ -48,14 +49,10 @@ jobs:
           name: Show Molecule version
           command: molecule --version
   yamllint:
-    docker:
-      - image: ghcr.io/docker-images-mamono210/circleci-executors/yamllint:latest
-    resource_class: small
+    executor: yamllint/default
     steps:
       - checkout
-      - run:
-          name: Execute yamllint
-          command: yamllint *
+      - yamllint/execute
   trailing-whitespace:
     docker:
       - image: ghcr.io/docker-images-mamono210/circleci-executors/trailing-whitespace:latest
