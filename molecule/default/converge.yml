@@ -2,5 +2,8 @@
 - name: Converge
   hosts: all
   become: true
-  roles:
-    - prometheus
+
+  tasks:
+    - name: Execute
+      ansible.builtin.include_role:
+        name: prometheus

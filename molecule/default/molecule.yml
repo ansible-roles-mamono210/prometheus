@@ -2,30 +2,61 @@
 dependency:
   name: galaxy
 driver:
-  name: docker
+  name: default
 platforms:
-  - name: instance
-    image: ${MOLECULE_IMAGE}
-    docker_host: "${DOCKER_HOST:-unix://var/run/docker.sock}"
-    command: '/sbin/init --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml'
-    exposed_ports:
-      - 9100/tcp
-      - 9090/tcp
-    privileged: True
-    published_ports:
-      - 0.0.0.0:9100:9100/tcp
-      - 0.0.0.0:9090:9090/tcp
+  - name: ${PLATFORM_NAME}
+    image_name: ${AMI_NAME}
+    image_owner: ${AMI_OWNER_ID}
+    instance_type: ${INSTANCE_TYPE}
+    keypair_name: ${KEYPAIR_NAME}
+    security_group_name: ${SECURITY_GROUP_NAME}
+    security_group_rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: '0.0.0.0/0'
+      - proto: tcp
+        from_port: 9100
+        to_port: 9100
+        cidr_ip: '0.0.0.0/0'
+      - proto: tcp
+        from_port: 9090
+        to_port: 9090
+        cidr_ip: '0.0.0.0/0'
+    security_group_rules_egress:
+      - proto: -1
+        from_port: 0
+        to_port: 0
+        cidr_ip: '0.0.0.0/0'
+    ssh_port: 22
+    ssh_user: ${ANSIBLE_USER}
+    tag_name: ${TAG_NAME}
+    tag_created_by: ${CREATED_BY}
+    volumes:
+      - device_name: /dev/sda1
+        ebs:
+          delete_on_termination: yes
+          volume_type: 'gp3'
+    vpc_subnet_id: ${VPC_SUBNET_ID}
 provisioner:
   name: ansible
   config_options:
     defaults:
       callbacks_enabled: ansible.posix.profile_tasks
+  connection_options:
+    ansible_user: ${ANSIBLE_USER}
+    profile: default
+  log: true
 verifier:
   name: ansible
 scenario:
   test_sequence:
+    - dependency
+    - cleanup
+    - destroy
     - syntax
     - create
     - converge
-    - idempotence
+    - cleanup
     - verify
+    - destroy

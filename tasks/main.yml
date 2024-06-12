@@ -5,16 +5,15 @@
   changed_when: false
   ignore_errors: true
   environment:
-    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+    PATH: '/usr/local/bin:{{ ansible_env.PATH }}'
 
 - name: Add Prometheus repo to the system
   ansible.builtin.yum_repository:
     name: prometheus
-    description: Copr repo for hugo owned by daftaupe
-    baseurl: |
-      'https://packagecloud.io/prometheus-rpm/release/el/$releasever/$basearch'
-    gpgcheck: yes
-    gpgkey: "https://packagecloud.io/prometheus-rpm/release/gpgkey\n https://raw.githubusercontent.com/lest/prometheus-rpm/master/RPM-GPG-KEY-prometheus-rpm"
+    description: prometheus
+    baseurl: 'https://packagecloud.io/prometheus-rpm/release/el/$releasever/$basearch'
+    gpgcheck: no
+    gpgkey: 'https://packagecloud.io/prometheus-rpm/release/gpgkey\n https://raw.githubusercontent.com/lest/prometheus-rpm/master/RPM-GPG-KEY-prometheus-rpm'
   when: prometheus_installed is failed
 
 - name: Install Prometheus and node-exporter
