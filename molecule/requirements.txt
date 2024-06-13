@@ -1,5 +1,7 @@
-wheel
-docker
 ansible
+boto
+boto3
+docker
 molecule
-molecule-docker
+requests
+selenium

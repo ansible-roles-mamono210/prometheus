@@ -20,8 +20,10 @@ jobs:
       - checkout
       - ansible-lint/execute:
           molecule-role-test: true
-  molecule-ec2:
-    executor: molecule-ec2/default
+  molecule:
+    machine:
+      image: ubuntu-2204:2023.10.1
+    resource_class: medium
     parameters:
       ansible-user:
         type: string
@@ -33,12 +35,15 @@ jobs:
         type: string
       aws-resource-name:
         type: string
+      aws-session-duration:
+        type: string
       aws-vpc-subnet-id:
         type: string
       circleci-timeout:
         type: string
       molecule-scenario-name:
         type: string
+        default: default
     working_directory: ~/prometheus
     steps:
       - checkout
@@ -47,10 +52,11 @@ jobs:
           profile-name: default
           role-arn: ${AWS_ROLE_ARN}
           role-session-name: << parameters.aws-resource-name >>
-          session-duration: '2100'
+          session-duration: << parameters.aws-session-duration >>
       - run:
-          name: Install Ansible roles
-          command: ansible-galaxy install -r molecule/<< parameters.molecule-scenario-name >>/requirements.yml
+          name: Install Molecule and dependencies
+          command: |
+            pip3 install -r molecule/requirements.txt
       - molecule-ec2/execute:
           ansible-user: << parameters.ansible-user >>
           aws-ami-name: << parameters.aws-ami-name >>
@@ -60,6 +66,14 @@ jobs:
           aws-vpc-subnet-id: << parameters.aws-vpc-subnet-id >>
           circleci-timeout: << parameters.circleci-timeout >>
           molecule-scenario-name: << parameters.molecule-scenario-name >>
+      - store_artifacts:
+          path: molecule/<< parameters.molecule-scenario-name >>/files/screenshot.png
+          destination: screenshot.<< parameters.molecule-scenario-name >>.png
+  yamllint:
+    executor: yamllint/default
+    steps:
+      - checkout
+      - yamllint/execute
   trailing-whitespace:
     executor: trailing-whitespace
     steps:
@@ -67,11 +81,6 @@ jobs:
       - run:
           name: Execute trailing-whitespace
           command: trailing-whitespace
-  yamllint:
-    executor: yamllint/default
-    steps:
-      - checkout
-      - yamllint/execute
 
 workflows:
   version: 2.1
@@ -84,12 +93,13 @@ workflows:
       - ansible-lint:
           requires:
             - yamllint
-      - molecule-ec2:
+      - molecule:
           ansible-user: 'ec2-user'
           aws-ami-name: 'centos-stream9-1*'
           aws-ami-owner-id: '808683561341'
           aws-instance-type: 't2.medium'
           aws-resource-name: 'circleci_ansible-roles_prometheus_centos-stream9'
+          aws-session-duration: '3600'
           aws-vpc-subnet-id: 'subnet-022a704b3061b8b39'
           circleci-timeout: '15m'
           molecule-scenario-name: 'default'
