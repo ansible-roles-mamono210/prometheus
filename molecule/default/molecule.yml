@@ -43,6 +43,7 @@ provisioner:
   config_options:
     defaults:
       callbacks_enabled: ansible.posix.profile_tasks
+      roles_path: "$HOME/.ansible/roles/:$HOME"
   connection_options:
     ansible_user: ${ANSIBLE_USER}
     profile: default
