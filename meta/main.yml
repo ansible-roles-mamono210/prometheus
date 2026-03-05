@@ -3,10 +3,10 @@ dependencies: []
 galaxy_info:
   role_name: prometheus
   author: mamano210
-  description: Install Prometheus for Linux.
+  description: Install Prometheus for CentOS Stream.
   company: no name
   license: "license (BSD, MIT)"
-  min_ansible_version: 10.0.1
+  min_ansible_version: 13.4.0
   platforms:
     - name: EL
       release:
